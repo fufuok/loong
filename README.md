@@ -24,7 +24,7 @@ VERSION:
    v0.0.1.21081515
 
 AUTHOR:
-   Fufu <mail@fufuok.com>
+   Fufu <fufuok.com>
 
 COMMANDS:
    help, h  Shows a list of commands or help for one command
@@ -42,7 +42,7 @@ GLOBAL OPTIONS:
    --version, -v                  print the version (default: false)
 
 COPYRIGHT:
-   https://github.com/fufuok/daemon-webserver
+   https://github.com/fufuok/loong
 ```
 
 ## 示例
