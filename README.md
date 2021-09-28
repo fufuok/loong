@@ -21,7 +21,7 @@ USAGE:
    - 支持 Windows / Linux, 可指定重启命令
 
 VERSION:
-   v0.0.1.21081515
+   v0.0.2.21092818
 
 AUTHOR:
    Fufu <fufuok.com>
@@ -32,11 +32,13 @@ COMMANDS:
 GLOBAL OPTIONS:
    --debug, -d                    调试模式 (default: false)
    --log value, -l value          文件日志级别: debug, info, warn, error, fatal, panic (default: "info")
+   --logfile value                日志文件位置 (default: "log/loong.log")
+   --errorlogfile value           错误级别的日志文件位置 (default: "log/loong.error.log")
    --url value, -u value          检查的网址
    --status-code value, -s value  网址需要返回的状态码 (default: 200)
    --text value, -t value         指定网页要包含的文本
    --web-service value, -w value  Web 服务类型 (IIS / Apache) (default: "iis")
-   --interval value, -i value     检查时间间隔 (秒) (default: 300)
+   --interval value, -i value     检查时间间隔 (秒) (default: 180)
    --cmd value, -c value          指定重启命令 (优先使用)
    --help, -h                     show help (default: false)
    --version, -v                  print the version (default: false)

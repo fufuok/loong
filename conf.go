@@ -1,13 +1,23 @@
 package loong
 
 import (
+	"path/filepath"
 	"time"
 
+	"github.com/fufuok/utils"
 	"github.com/go-resty/resty/v2"
-	"github.com/phuslu/log"
 )
 
 var (
+	// RootPath 运行绝对路径
+	RootPath = utils.ExecutableDir(true)
+
+	// LogDir 日志路径
+	LogDir        = filepath.Join(RootPath, "log")
+	LogFile       = filepath.Join(LogDir, APPName+".log")
+	ErrorLogFile  = filepath.Join(LogDir, APPName+".error.log")
+	DaemonLogFile = filepath.Join(LogDir, APPName+".daemon.log")
+
 	req     *resty.Client
 	conf    *TConfig
 	retries = 3
@@ -16,6 +26,8 @@ var (
 type TConfig struct {
 	Debug        bool
 	LogLevel     string
+	LogFile      string
+	ErrorLogFile string
 	URL          string
 	StatusCode   int
 	ContainsText string
@@ -24,34 +36,12 @@ type TConfig struct {
 	ResetCmd     map[string]string
 }
 
-func InitLoong(c *TConfig) {
+func InitMain(c *TConfig) {
 	// 更新系统配置
 	conf = c
 
 	initLogger()
 	initRequest()
-}
-
-func initLogger() {
-	log.DefaultLogger = log.Logger{
-		Level:      log.ParseLevel(conf.LogLevel),
-		TimeFormat: "0102 15:04:05",
-		Writer: &log.FileWriter{
-			Filename:     "logs/loong.daemon.log",
-			FileMode:     0600,
-			MaxSize:      100 << 20,
-			MaxBackups:   7,
-			EnsureFolder: true,
-			LocalTime:    true,
-		},
-	}
-	if conf.Debug {
-		log.DefaultLogger.Writer = &log.ConsoleWriter{
-			ColorOutput:    true,
-			QuoteString:    true,
-			EndWithMessage: true,
-		}
-	}
 }
 
 func initRequest() {

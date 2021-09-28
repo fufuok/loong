@@ -13,7 +13,11 @@ import (
 )
 
 var (
-	debug    bool
+	version = "v0.0.2.21092818"
+
+	// 全局配置项
+	conf = &loong.TConfig{}
+
 	resetCmd = map[string]string{
 		"iis":    "iisreset",
 		"apache": "net stop ff.apachex64 & net start ff.apachex64",
@@ -26,7 +30,7 @@ func main() {
 	app.Name = "Daemon Web Server"
 	app.Usage = "守护 Windows / Linux 的网站服务"
 	app.UsageText = "- 请使用管理员身份运行\n   - 用于老旧边缘服务, 临时守护\n   - 支持 Windows / Linux, 可指定重启命令"
-	app.Version = "v0.0.1.21081515"
+	app.Version = version
 	app.Copyright = "https://github.com/fufuok/loong"
 	app.Authors = []*cli.Author{
 		{
@@ -39,32 +43,48 @@ func main() {
 			Name:        "debug",
 			Usage:       "调试模式",
 			Aliases:     []string{"d"},
-			Destination: &debug,
+			Destination: &conf.Debug,
 		},
 		&cli.StringFlag{
-			Name:    "log",
-			Value:   "info",
-			Usage:   "文件日志级别: debug, info, warn, error, fatal, panic",
-			Aliases: []string{"l"},
+			Name:        "log",
+			Value:       "info",
+			Usage:       "文件日志级别: debug, info, warn, error, fatal, panic",
+			Aliases:     []string{"l"},
+			Destination: &conf.LogLevel,
 		},
 		&cli.StringFlag{
-			Name:     "url",
-			Value:    "",
-			Usage:    "检查的网址",
-			Aliases:  []string{"u"},
-			Required: true,
+			Name:        "logfile",
+			Value:       loong.LogFile,
+			Usage:       "日志文件位置",
+			Destination: &conf.LogFile,
+		},
+		&cli.StringFlag{
+			Name:        "errorlogfile",
+			Value:       loong.ErrorLogFile,
+			Usage:       "错误级别的日志文件位置",
+			Destination: &conf.ErrorLogFile,
+		},
+		&cli.StringFlag{
+			Name:        "url",
+			Value:       "",
+			Usage:       "检查的网址",
+			Aliases:     []string{"u"},
+			Required:    true,
+			Destination: &conf.URL,
 		},
 		&cli.IntFlag{
-			Name:    "status-code",
-			Value:   200,
-			Usage:   "网址需要返回的状态码",
-			Aliases: []string{"s"},
+			Name:        "status-code",
+			Value:       200,
+			Usage:       "网址需要返回的状态码",
+			Aliases:     []string{"s"},
+			Destination: &conf.StatusCode,
 		},
 		&cli.StringFlag{
-			Name:    "text",
-			Value:   "",
-			Usage:   "指定网页要包含的文本",
-			Aliases: []string{"t"},
+			Name:        "text",
+			Value:       "",
+			Usage:       "指定网页要包含的文本",
+			Aliases:     []string{"t"},
+			Destination: &conf.ContainsText,
 		},
 		&cli.StringFlag{
 			Name:    "web-service",
@@ -74,7 +94,7 @@ func main() {
 		},
 		&cli.UintFlag{
 			Name:    "interval",
-			Value:   300,
+			Value:   180,
 			Usage:   "检查时间间隔 (秒)",
 			Aliases: []string{"i"},
 		},
@@ -87,11 +107,11 @@ func main() {
 	}
 	app.Action = func(c *cli.Context) error {
 		// 日志目录
-		_ = os.Mkdir("logs", os.ModePerm)
+		_ = os.Mkdir(loong.LogDir, os.ModePerm)
 
 		// 守护自身
-		if !debug {
-			xdaemon.NewDaemon("logs/loong.log").Run()
+		if !conf.Debug {
+			xdaemon.NewDaemon(loong.DaemonLogFile).Run()
 		}
 
 		// 重启命令配置
@@ -102,16 +122,10 @@ func main() {
 		}
 
 		// 初始化配置
-		loong.InitLoong(&loong.TConfig{
-			Debug:        debug,
-			LogLevel:     c.String("log"),
-			URL:          c.String("url"),
-			ContainsText: c.String("text"),
-			StatusCode:   c.Int("status-code"),
-			WebService:   service,
-			Interval:     time.Duration(c.Uint("interval")) * time.Second,
-			ResetCmd:     resetCmd,
-		})
+		conf.WebService = service
+		conf.ResetCmd = resetCmd
+		conf.Interval = time.Duration(c.Uint("interval")) * time.Second
+		loong.InitMain(conf)
 
 		// 守护 Web 服务
 		loong.Daemon()
